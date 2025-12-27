@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from "react";
 import API from "../services/api";
-import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { 
   Grid, 
   TextField, 
@@ -22,7 +22,8 @@ import {
   Stack,
   InputAdornment,
   IconButton,
-  Chip
+  Chip,
+  alpha
 } from '@mui/material';
 import { 
   Search, 
@@ -32,11 +33,12 @@ import {
   PictureAsPdf,
   Image as ImageIcon,
   Description,
-  Delete as DeleteIcon
+  DeleteOutline
 } from '@mui/icons-material';
 import { toast } from "react-toastify";
 
 export default function Documents() {
+  const navigate = useNavigate();
   const [docs, setDocs] = useState([]);
   const [query, setQuery] = useState("");
   const [vendors, setVendors] = useState([]);
@@ -44,7 +46,6 @@ export default function Documents() {
   const [fromDate, setFromDate] = useState("");
   const [toDate, setToDate] = useState("");
 
-  // Applied filter values
   const [appliedQuery, setAppliedQuery] = useState("");
   const [appliedVendor, setAppliedVendor] = useState("");
   const [appliedFromDate, setAppliedFromDate] = useState("");
@@ -100,67 +101,73 @@ export default function Documents() {
   };
 
   const handleDelete = async (e, id) => {
-    e.preventDefault(); // Prevent navigation to details
     e.stopPropagation();
-    
-    if (window.confirm("Are you sure you want to delete this document? This action cannot be undone.")) {
+    if (window.confirm("Are you sure you want to delete this document?")) {
       try {
         await API.delete(`/documents/${id}`);
         toast.success("Document deleted successfully");
-        // Refresh the list
         loadDocs();
       } catch (err) {
-        toast.error(err?.response?.data?.message || "Failed to delete document");
+        toast.error("Failed to delete document");
       }
     }
   };
 
   const getFileIcon = (type) => {
-    if (type?.includes('pdf')) return <PictureAsPdf color="error" fontSize="small" />;
-    if (type?.includes('image')) return <ImageIcon color="primary" fontSize="small" />;
-    return <Description color="action" fontSize="small" />;
+    if (type?.includes('pdf')) return <PictureAsPdf sx={{ color: '#f43f5e' }} fontSize="small" />;
+    if (type?.includes('image')) return <ImageIcon sx={{ color: '#3b82f6' }} fontSize="small" />;
+    return <Description sx={{ color: '#64748b' }} fontSize="small" />;
   };
 
   return (
     <Box>
-      <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 3 }}>
+      <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 4 }}>
         <Box>
-          <Typography variant="h4" fontWeight={700}>Documents</Typography>
-          <Typography variant="body2" color="text.secondary">Manage and view your uploaded invoices</Typography>
+          <Typography variant="h4" fontWeight={800} sx={{ color: 'text.primary', letterSpacing: '-0.02em' }}>
+            Documents
+          </Typography>
+          <Typography variant="body1" color="text.secondary">
+            Manage and verify your extracted invoice data.
+          </Typography>
         </Box>
         <Button 
           variant="contained" 
           startIcon={<CloudUpload />} 
-          component={Link} 
-          to="/upload"
-          sx={{ px: 3 }}
+          onClick={() => navigate("/upload")}
+          size="large"
+          sx={{ px: 4, borderRadius: 3, fontWeight: 700 }}
         >
-          Upload Invoice
+          Upload New
         </Button>
       </Stack>
 
-      {/* Filters */}
-      <Paper elevation={0} variant="outlined" sx={{ p: 3, mb: 3, bgcolor: 'background.paper' }}>
-        <Stack direction="row" alignItems="center" spacing={1} sx={{ mb: 2 }}>
-          <FilterList fontSize="small" color="action" />
-          <Typography variant="subtitle2" fontWeight={600}>Filters</Typography>
-        </Stack>
-        
+      {/* Filters Area */}
+      <Paper 
+        elevation={0} 
+        sx={{ 
+          p: 3, 
+          mb: 4, 
+          borderRadius: 4, 
+          border: '1px solid',
+          borderColor: 'divider',
+          bgcolor: 'background.paper'
+        }}
+      >
         <Grid container spacing={2} alignItems="center">
-          <Grid item xs={12} md={4}>
+          <Grid item xs={12} md={3}>
             <TextField 
               fullWidth 
               size="small"
-              label="Search" 
-              placeholder="Search by vendor, invoice #" 
+              placeholder="Search invoices..." 
               value={query} 
               onChange={(e) => setQuery(e.target.value)} 
               InputProps={{
                 startAdornment: (
                   <InputAdornment position="start">
-                    <Search fontSize="small" />
+                    <Search fontSize="small" color="disabled" />
                   </InputAdornment>
                 ),
+                sx: { borderRadius: 2 }
               }}
             />
           </Grid>
@@ -168,7 +175,12 @@ export default function Documents() {
           <Grid item xs={6} md={2}>
             <FormControl fullWidth size="small">
               <InputLabel>Vendor</InputLabel>
-              <Select value={vendorFilter} label="Vendor" onChange={(e) => setVendorFilter(e.target.value)}>
+              <Select 
+                value={vendorFilter} 
+                label="Vendor" 
+                onChange={(e) => setVendorFilter(e.target.value)}
+                sx={{ borderRadius: 2 }}
+              >
                 <MenuItem value=""><em>All vendors</em></MenuItem>
                 {vendors.map((v) => (
                   <MenuItem key={v} value={v}>{v}</MenuItem>
@@ -179,34 +191,46 @@ export default function Documents() {
 
           <Grid item xs={6} md={2}>
             <TextField 
-              label="From Date" 
+              label="From" 
               type="date" 
               size="small"
               fullWidth 
               InputLabelProps={{ shrink: true }} 
               value={fromDate} 
               onChange={(e) => setFromDate(e.target.value)} 
+              sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
             />
           </Grid>
 
           <Grid item xs={6} md={2}>
             <TextField 
-              label="To Date" 
+              label="To" 
               type="date" 
               size="small"
               fullWidth 
               InputLabelProps={{ shrink: true }} 
               value={toDate} 
               onChange={(e) => setToDate(e.target.value)} 
+              sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
             />
           </Grid>
 
-          <Grid item xs={12} md={2}>
+          <Grid item xs={12} md={3}>
             <Stack direction="row" spacing={1}>
-              <Button variant="contained" onClick={handleApply} fullWidth sx={{ height: 40 }}>
-                Apply
+              <Button 
+                variant="contained" 
+                onClick={handleApply} 
+                fullWidth 
+                sx={{ borderRadius: 2, fontWeight: 600 }}
+              >
+                Apply Filters
               </Button>
-              <Button variant="outlined" onClick={handleClear} sx={{ height: 40, minWidth: 40, p: 0 }}>
+              <Button 
+                variant="outlined" 
+                onClick={handleClear} 
+                color="inherit"
+                sx={{ borderRadius: 2, minWidth: 48 }}
+              >
                 <Clear fontSize="small" />
               </Button>
             </Stack>
@@ -214,17 +238,25 @@ export default function Documents() {
         </Grid>
       </Paper>
 
-      {/* Table */}
-      <TableContainer component={Paper} elevation={0} variant="outlined">
-        <Table sx={{ minWidth: 650 }}>
-          <TableHead>
+      {/* Modern Table */}
+      <TableContainer 
+        component={Paper} 
+        elevation={0} 
+        sx={{ 
+          borderRadius: 4, 
+          border: '1px solid',
+          borderColor: 'divider',
+          overflow: 'hidden'
+        }}
+      >
+        <Table>
+          <TableHead sx={{ bgcolor: (theme) => theme.palette.mode === 'light' ? 'grey.50' : 'grey.900' }}>
             <TableRow>
-              <TableCell>File / Invoice</TableCell>
-              <TableCell>Vendor</TableCell>
-              <TableCell>Amount</TableCell>
-              <TableCell>Invoice Date</TableCell>
-              <TableCell>Uploaded</TableCell>
-              <TableCell align="right">Actions</TableCell>
+              <TableCell sx={{ fontWeight: 700, py: 2 }}>Invoice Details</TableCell>
+              <TableCell sx={{ fontWeight: 700 }}>Vendor</TableCell>
+              <TableCell sx={{ fontWeight: 700 }}>Amount</TableCell>
+              <TableCell sx={{ fontWeight: 700 }}>Date</TableCell>
+              <TableCell align="right" sx={{ fontWeight: 700, pr: 3 }}>Actions</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -233,18 +265,30 @@ export default function Documents() {
                 <TableRow 
                   key={d._id} 
                   hover 
-                  component={Link} 
-                  to={`/documents/${d._id}`} 
-                  sx={{ textDecoration: 'none', cursor: 'pointer', '&:last-child td, &:last-child th': { border: 0 } }}
+                  onClick={() => navigate(`/documents/${d._id}`)}
+                  sx={{ 
+                    cursor: 'pointer',
+                    '&:last-child td, &:last-child th': { border: 0 },
+                    transition: 'background-color 0.2s'
+                  }}
                 >
-                  <TableCell>
+                  <TableCell sx={{ py: 2.5 }}>
                     <Stack direction="row" spacing={2} alignItems="center">
-                      {getFileIcon(d.fileType)}
+                      <Box 
+                        sx={{ 
+                          p: 1, 
+                          borderRadius: 2, 
+                          bgcolor: (theme) => alpha(theme.palette.primary.main, 0.1),
+                          display: 'flex'
+                        }}
+                      >
+                        {getFileIcon(d.fileType)}
+                      </Box>
                       <Box>
-                         <Typography variant="body2" fontWeight={600} color="text.primary">
-                           {d.extractedData?.invoiceNumber || "—"}
+                         <Typography variant="body2" fontWeight={700} color="text.primary">
+                           {d.extractedData?.invoiceNumber || "Untagged"}
                          </Typography>
-                         <Typography variant="caption" color="text.secondary">
+                         <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>
                            {d.fileName}
                          </Typography>
                       </Box>
@@ -252,36 +296,47 @@ export default function Documents() {
                   </TableCell>
                   <TableCell>
                     {d.extractedData?.vendorName ? (
-                      <Chip label={d.extractedData.vendorName} size="small" variant="outlined" />
+                      <Chip 
+                        label={d.extractedData.vendorName} 
+                        size="small" 
+                        sx={{ fontWeight: 600, borderRadius: 1.5, bgcolor: 'background.default' }} 
+                        variant="outlined" 
+                      />
                     ) : (
-                      <Typography variant="body2" color="text.secondary">—</Typography>
+                      <Typography variant="caption" color="text.disabled">Unknown</Typography>
                     )}
                   </TableCell>
                   <TableCell>
-                    <Typography fontWeight={600} color={d.extractedData?.totalAmount ? 'success.main' : 'text.disabled'}>
-                       {d.extractedData?.totalAmount ? `$ ${d.extractedData.totalAmount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 5 })}` : '—'}
+                    <Typography variant="body2" fontWeight={800} color="primary.main">
+                       {d.extractedData?.totalAmount ? `$ ${d.extractedData.totalAmount.toLocaleString('en-US', { minimumFractionDigits: 2 })}` : '—'}
                     </Typography>
                   </TableCell>
-                  <TableCell>{d.extractedData?.invoiceDate || '—'}</TableCell>
                   <TableCell>
-                    {new Date(d.createdAt).toLocaleDateString()}
+                    <Typography variant="body2" color="text.secondary">
+                      {d.extractedData?.invoiceDate || '—'}
+                    </Typography>
                   </TableCell>
-                  <TableCell align="right">
-                    <IconButton 
-                      onClick={(e) => handleDelete(e, d._id)} 
-                      color="error" 
-                      size="small"
-                      title="Delete Document"
-                    >
-                      <DeleteIcon />
-                    </IconButton>
+                  <TableCell align="right" sx={{ pr: 2 }}>
+                    <Tooltip title="Delete">
+                      <IconButton 
+                        onClick={(e) => handleDelete(e, d._id)} 
+                        sx={{ 
+                          color: 'error.light',
+                          '&:hover': { bgcolor: alpha('#ef4444', 0.1), color: 'error.main' }
+                        }} 
+                        size="small"
+                      >
+                        <DeleteOutline fontSize="small" />
+                      </IconButton>
+                    </Tooltip>
                   </TableCell>
                 </TableRow>
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={6} align="center" sx={{ py: 3 }}>
-                  <Typography color="text.secondary">No documents found matching your filters.</Typography>
+                <TableCell colSpan={5} align="center" sx={{ py: 8 }}>
+                  <Description sx={{ fontSize: 48, color: 'text.disabled', mb: 1, opacity: 0.5 }} />
+                  <Typography color="text.secondary" fontWeight={500}>No documents found.</Typography>
                 </TableCell>
               </TableRow>
             )}
@@ -289,13 +344,14 @@ export default function Documents() {
         </Table>
       </TableContainer>
 
-      <Box sx={{ display: 'flex', justifyContent: 'center', mt: 3 }}>
+      <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
         <Pagination 
           count={Math.max(1, Math.ceil(totalCount / limit))} 
           page={page} 
           onChange={(_, p) => setPage(p)} 
           color="primary" 
           shape="rounded"
+          size="large"
         />
       </Box>
     </Box>
