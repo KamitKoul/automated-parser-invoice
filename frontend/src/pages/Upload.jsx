@@ -7,8 +7,7 @@ import {
   Typography, 
   LinearProgress, 
   Paper, 
-  IconButton,
-  Alpha
+  IconButton
 } from '@mui/material';
 import { CloudUpload, Delete, InsertDriveFile } from '@mui/icons-material';
 
