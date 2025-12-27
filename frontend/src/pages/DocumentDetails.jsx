@@ -1,159 +1,268 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import API from "../services/api";
+import { toast } from "react-toastify";
 import { 
   Button, 
   Typography, 
-  Card, 
-  CardContent, 
   Paper, 
   Box, 
   Grid, 
-  Chip, 
-  Divider,
   Stack,
-  CircularProgress
+  CircularProgress,
+  TextField,
+  IconButton,
+  Tooltip
 } from '@mui/material';
 import { 
   ArrowBack, 
+  Save, 
   Download, 
-  ReceiptLong, 
-  Description, 
+  ReceiptLong,
   CalendarToday, 
   AttachMoney, 
-  Store 
+  Store,
+  Description
 } from '@mui/icons-material';
-
-const DetailItem = ({ label, value, icon }) => (
-  <Grid item xs={12} sm={6} md={4}>
-    <Paper variant="outlined" sx={{ p: 2, height: '100%', borderColor: 'grey.200' }}>
-      <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
-        <Box sx={{ color: 'primary.main', display: 'flex' }}>
-          {icon}
-        </Box>
-        <Box>
-          <Typography variant="caption" color="text.secondary" display="block" sx={{ textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 600 }}>
-            {label}
-          </Typography>
-          <Typography variant="body1" fontWeight={600} sx={{ mt: 0.5 }}>
-            {value || "—"}
-          </Typography>
-        </Box>
-      </Box>
-    </Paper>
-  </Grid>
-);
 
 export default function DocumentDetails() {
   const { id } = useParams();
   const navigate = useNavigate();
   const [doc, setDoc] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [pdfUrl, setPdfUrl] = useState(null);
+  const [saving, setSaving] = useState(false);
+  
+  // Form State
+  const [formData, setFormData] = useState({
+    vendorName: "",
+    invoiceNumber: "",
+    invoiceDate: "",
+    totalAmount: ""
+  });
 
   useEffect(() => {
-    API.get(`/documents/${id}`)
-      .then((res) => setDoc(res.data))
-      .catch(() => setDoc(null))
-      .finally(() => setLoading(false));
+    const fetchDoc = async () => {
+      try {
+        const res = await API.get(`/documents/${id}`);
+        setDoc(res.data);
+        
+        // Initialize form with extracted data
+        const data = res.data.extractedData || {};
+        setFormData({
+          vendorName: data.vendorName || "",
+          invoiceNumber: data.invoiceNumber || "",
+          invoiceDate: data.invoiceDate || "",
+          totalAmount: data.totalAmount || ""
+        });
+
+        // Fetch PDF Blob for display
+        const blobRes = await API.get(`/documents/${id}/download`, { responseType: 'blob' });
+        const url = window.URL.createObjectURL(new Blob([blobRes.data], { type: 'application/pdf' }));
+        setPdfUrl(url);
+      } catch (err) {
+        console.error(err);
+        toast.error("Failed to load document");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchDoc();
+
+    // Cleanup Blob URL
+    return () => {
+      if (pdfUrl) window.URL.revokeObjectURL(pdfUrl);
+    };
   }, [id]);
 
-  if (loading) return <Box sx={{ display: 'flex', justifyContent: 'center', mt: 5 }}><CircularProgress /></Box>;
-  if (!doc) return <Typography color="error">Document not found</Typography>;
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
 
-  const download = async () => {
+  const handleSave = async () => {
     try {
-      const res = await API.get(`/documents/${id}/download`, { responseType: 'blob' });
-      const url = window.URL.createObjectURL(new Blob([res.data]));
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = doc.fileName || 'document';
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      window.URL.revokeObjectURL(url);
+      setSaving(true);
+      await API.put(`/documents/${id}`, { extractedData: formData });
+      toast.success("Document updated successfully");
+      
+      // Update local doc state
+      setDoc(prev => ({ ...prev, extractedData: formData }));
     } catch (err) {
-      console.error('Download failed', err);
+      toast.error("Failed to save changes");
+    } finally {
+      setSaving(false);
     }
   };
 
-  const { extractedData } = doc;
+  const downloadOriginal = () => {
+    if (pdfUrl) {
+      const a = document.createElement('a');
+      a.href = pdfUrl;
+      a.download = doc.fileName || 'document.pdf';
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+    }
+  };
+
+  if (loading) return <Box sx={{ display: 'flex', justifyContent: 'center', mt: 10 }}><CircularProgress /></Box>;
+  if (!doc) return <Typography color="error">Document not found</Typography>;
 
   return (
-    <Box>
-      {/* Header Section */}
-      <Box sx={{ mb: 4, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 2 }}>
-        <Box>
-          <Button startIcon={<ArrowBack />} onClick={() => navigate(-1)} sx={{ mb: 1, color: 'text.secondary' }}>
-            Back to List
+    <Box sx={{ height: 'calc(100vh - 100px)', display: 'flex', flexDirection: 'column' }}>
+      {/* Header Toolbar */}
+      <Paper 
+        elevation={1} 
+        sx={{ 
+          p: 2, 
+          mb: 2, 
+          display: 'flex', 
+          justifyContent: 'space-between', 
+          alignItems: 'center',
+          borderRadius: 2
+        }}
+      >
+        <Stack direction="row" alignItems="center" spacing={2}>
+          <IconButton onClick={() => navigate(-1)}>
+            <ArrowBack />
+          </IconButton>
+          <Box>
+            <Typography variant="h6" fontWeight={700} lineHeight={1.2}>
+              {doc.fileName}
+            </Typography>
+            <Typography variant="caption" color="text.secondary">
+               Interactive Verification Mode
+            </Typography>
+          </Box>
+        </Stack>
+        <Stack direction="row" spacing={2}>
+           <Button 
+            startIcon={<Download />} 
+            onClick={downloadOriginal}
+            color="inherit"
+          >
+            Download
           </Button>
-          <Typography variant="h4" fontWeight={700}>
-            {doc.fileName}
-          </Typography>
-          <Stack direction="row" spacing={2} alignItems="center" sx={{ mt: 1 }}>
-             <Chip label={doc.fileType} size="small" variant="outlined" />
-             <Typography variant="body2" color="text.secondary">
-               Uploaded on {new Date(doc.createdAt).toLocaleString()}
-             </Typography>
-          </Stack>
-        </Box>
-        <Button 
-          variant="contained" 
-          startIcon={<Download />} 
-          onClick={download}
-          size="large"
-        >
-          Download Original
-        </Button>
-      </Box>
-
-      {/* Extracted Data Section */}
-      <Typography variant="h5" sx={{ mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
-        <ReceiptLong color="primary" /> Extracted Invoice Data
-      </Typography>
-      
-      <Grid container spacing={2} sx={{ mb: 4 }}>
-        <DetailItem 
-          label="Invoice Number" 
-          value={extractedData?.invoiceNumber} 
-          icon={<Description />}
-        />
-        <DetailItem 
-          label="Vendor Name" 
-          value={extractedData?.vendorName} 
-          icon={<Store />}
-        />
-        <DetailItem 
-          label="Invoice Date" 
-          value={extractedData?.invoiceDate} 
-          icon={<CalendarToday />}
-        />
-        <DetailItem 
-          label="Total Amount" 
-          value={extractedData?.totalAmount ? `$ ${extractedData.totalAmount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 5 })}` : null} 
-          icon={<AttachMoney />}
-        />
-      </Grid>
-
-      <Divider sx={{ my: 4 }} />
-
-      {/* Raw Text Section */}
-      <Typography variant="h5" sx={{ mb: 2 }}>
-        Raw Extracted Text
-      </Typography>
-      <Paper variant="outlined" sx={{ p: 3, bgcolor: 'grey.50', maxHeight: 400, overflow: 'auto' }}>
-        <Typography 
-          component="pre" 
-          sx={{ 
-            fontFamily: 'monospace', 
-            whiteSpace: 'pre-wrap', 
-            fontSize: '0.875rem', 
-            color: 'text.secondary',
-            margin: 0
-          }}
-        >
-          {doc.rawText || "No text extracted."}
-        </Typography>
+          <Button 
+            variant="contained" 
+            startIcon={<Save />} 
+            onClick={handleSave}
+            disabled={saving}
+          >
+            {saving ? "Saving..." : "Save Changes"}
+          </Button>
+        </Stack>
       </Paper>
+
+      {/* Split View */}
+      <Grid container spacing={2} sx={{ flexGrow: 1, overflow: 'hidden' }}>
+        
+        {/* Left Pane: PDF Viewer */}
+        <Grid item xs={12} md={7} sx={{ height: '100%' }}>
+          <Paper 
+            variant="outlined" 
+            sx={{ 
+              height: '100%', 
+              bgcolor: 'grey.100', 
+              overflow: 'hidden',
+              borderRadius: 2,
+              border: '1px solid #e0e0e0'
+            }}
+          >
+            {pdfUrl ? (
+              <iframe 
+                src={pdfUrl} 
+                width="100%" 
+                height="100%" 
+                style={{ border: 'none' }} 
+                title="PDF Viewer"
+              />
+            ) : (
+              <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
+                <Typography color="text.secondary">Loading PDF...</Typography>
+              </Box>
+            )}
+          </Paper>
+        </Grid>
+
+        {/* Right Pane: Edit Form */}
+        <Grid item xs={12} md={5} sx={{ height: '100%', overflowY: 'auto' }}>
+          <Paper sx={{ p: 3, height: '100%', borderRadius: 2 }}>
+            <Typography variant="h6" fontWeight={700} sx={{ mb: 3, display: 'flex', alignItems: 'center', gap: 1 }}>
+              <ReceiptLong color="primary" /> Verify & Edit Data
+            </Typography>
+
+            <Stack spacing={3}>
+              <TextField
+                label="Vendor Name"
+                name="vendorName"
+                value={formData.vendorName}
+                onChange={handleChange}
+                fullWidth
+                InputProps={{
+                  startAdornment: <Store color="action" sx={{ mr: 1 }} />
+                }}
+              />
+
+              <TextField
+                label="Invoice Number"
+                name="invoiceNumber"
+                value={formData.invoiceNumber}
+                onChange={handleChange}
+                fullWidth
+                InputProps={{
+                  startAdornment: <Description color="action" sx={{ mr: 1 }} />
+                }}
+              />
+
+              <TextField
+                label="Invoice Date"
+                name="invoiceDate"
+                value={formData.invoiceDate}
+                onChange={handleChange}
+                fullWidth
+                placeholder="YYYY-MM-DD"
+                InputProps={{
+                  startAdornment: <CalendarToday color="action" sx={{ mr: 1 }} />
+                }}
+              />
+
+              <TextField
+                label="Total Amount"
+                name="totalAmount"
+                value={formData.totalAmount}
+                onChange={handleChange}
+                fullWidth
+                type="number"
+                InputProps={{
+                  startAdornment: <AttachMoney color="action" sx={{ mr: 1 }} />
+                }}
+              />
+
+              <Box sx={{ mt: 2 }}>
+                 <Typography variant="subtitle2" gutterBottom color="text.secondary">
+                   Raw Text Preview
+                 </Typography>
+                 <Paper 
+                   variant="outlined" 
+                   sx={{ 
+                     p: 2, 
+                     bgcolor: 'grey.50', 
+                     maxHeight: 200, 
+                     overflow: 'auto',
+                     fontSize: '0.8rem',
+                     fontFamily: 'monospace'
+                   }}
+                 >
+                   {doc.rawText}
+                 </Paper>
+              </Box>
+            </Stack>
+          </Paper>
+        </Grid>
+
+      </Grid>
     </Box>
   );
 }

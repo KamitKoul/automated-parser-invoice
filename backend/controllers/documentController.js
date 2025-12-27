@@ -134,6 +134,28 @@ exports.deleteDocument = async (req, res) => {
   }
 };
 
+exports.updateDocument = async (req, res) => {
+  try {
+    const { extractedData } = req.body;
+    const document = await Document.findById(req.params.id);
+
+    if (!document) {
+      return res.status(404).json({ message: "Document not found" });
+    }
+
+    if (document.userId.toString() !== req.user._id.toString()) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+
+    document.extractedData = { ...document.extractedData, ...extractedData };
+    await document.save();
+
+    res.json({ message: "Document updated successfully", document });
+  } catch (error) {
+    res.status(500).json({ message: "Update failed", error: error.message });
+  }
+};
+
 exports.getVendors = async (req, res) => {
   const vendors = await Document.distinct('extractedData.vendorName', { userId: req.user._id });
   res.json(vendors.filter(Boolean));
