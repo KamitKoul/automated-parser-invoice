@@ -24,16 +24,9 @@ export default function Layout({ children }) {
         sx={{ 
           minHeight: '100vh', 
           bgcolor: 'background.default',
-          display: 'flex',
-          flexDirection: 'column',
-          justifyContent: 'center',
-          alignItems: 'center',
-          py: 4
         }}
       >
-        <Container maxWidth="sm">
-          {children}
-        </Container>
+        {children}
       </Box>
     );
   }
@@ -55,7 +48,10 @@ export default function Layout({ children }) {
           p: 3, 
           width: { md: `calc(100% - 240px)` }, // Subtract sidebar width on desktop
           display: 'flex',
-          flexDirection: 'column'
+          flexDirection: 'column',
+          background: (theme) => theme.palette.mode === 'light' 
+            ? 'linear-gradient(to right bottom, #f3f4f6, #f9fafb)' 
+            : 'linear-gradient(to right bottom, #0f172a, #1e293b)',
         }}
       >
         {/* Mobile Menu Toggle */}
