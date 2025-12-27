@@ -8,10 +8,11 @@ import {
   Button, 
   Typography, 
   Link, 
-  Grid,
   InputAdornment,
   IconButton,
-  Fade
+  Fade,
+  Container,
+  useTheme
 } from '@mui/material';
 import { 
   ReceiptLong, 
@@ -27,6 +28,7 @@ export default function Login() {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const theme = useTheme();
 
   const submitHandler = async (e) => {
     try {
@@ -44,71 +46,51 @@ export default function Login() {
   };
 
   return (
-    <Grid container component="main" sx={{ height: '100vh', overflow: 'hidden' }}>
-      {/* Left Side - Hero Image */}
-      <Grid
-        item
-        xs={false}
-        sm={4}
-        md={7}
-        sx={{
-          backgroundImage: 'url(https://source.unsplash.com/random?office,finance)',
-          backgroundRepeat: 'no-repeat',
-          backgroundColor: (t) => t.palette.mode === 'light' ? t.palette.grey[50] : t.palette.grey[900],
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-          position: 'relative',
-        }}
-      >
-        <Box
-          sx={{
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            width: '100%',
-            height: '100%',
-            background: 'linear-gradient(135deg, rgba(37,99,235,0.8) 0%, rgba(124,58,237,0.6) 100%)',
-            display: 'flex',
-            flexDirection: 'column',
-            justifyContent: 'center',
-            p: 8,
-            color: 'white'
-          }}
-        >
-          <Fade in timeout={1000}>
-            <Box>
-              <Typography variant="h2" fontWeight={800} gutterBottom>
-                Automate Your <br/> Invoices.
-              </Typography>
-              <Typography variant="h5" fontWeight={400} sx={{ opacity: 0.9 }}>
-                AI-powered extraction for smarter financial management.
-              </Typography>
+    <Box 
+      className="animated-bg"
+      sx={{ 
+        minHeight: '100vh', 
+        display: 'flex', 
+        alignItems: 'center', 
+        justifyContent: 'center',
+        p: 2
+      }}
+    >
+      <Fade in timeout={800}>
+        <Container maxWidth="xs">
+          <Paper
+            className={`glass-card ${theme.palette.mode === 'dark' ? 'dark-mode' : ''}`}
+            elevation={0}
+            sx={{
+              p: 4,
+              borderRadius: 4,
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              backdropFilter: 'blur(20px)',
+            }}
+            component="form"
+            onSubmit={submitHandler}
+          >
+            <Box 
+              sx={{ 
+                p: 2, 
+                bgcolor: 'primary.main', 
+                borderRadius: '50%', 
+                mb: 2, 
+                boxShadow: '0 4px 20px rgba(37, 99, 235, 0.4)' 
+              }}
+            >
+              <ReceiptLong sx={{ fontSize: 32, color: 'white' }} />
             </Box>
-          </Fade>
-        </Box>
-      </Grid>
+            
+            <Typography component="h1" variant="h4" fontWeight={800} gutterBottom align="center" sx={{ color: 'text.primary' }}>
+              Welcome Back
+            </Typography>
+            <Typography variant="body1" color="text.secondary" align="center" sx={{ mb: 4 }}>
+              Sign in to manage your invoices effortlessly.
+            </Typography>
 
-      {/* Right Side - Form */}
-      <Grid item xs={12} sm={8} md={5} component={Paper} elevation={6} square sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-        <Box
-          sx={{
-            my: 8,
-            mx: 6,
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-          }}
-        >
-          <ReceiptLong sx={{ fontSize: 48, color: 'primary.main', mb: 2 }} />
-          
-          <Typography component="h1" variant="h4" fontWeight={700} gutterBottom>
-            Welcome Back
-          </Typography>
-          <Typography variant="body1" color="text.secondary" sx={{ mb: 4 }}>
-            Please enter your details to sign in.
-          </Typography>
-
-          <Box component="form" onSubmit={submitHandler} sx={{ width: '100%' }}>
             <TextField
               margin="normal"
               required
@@ -127,6 +109,7 @@ export default function Login() {
                   </InputAdornment>
                 ),
               }}
+              sx={{ mb: 2 }}
             />
             <TextField
               margin="normal"
@@ -157,6 +140,7 @@ export default function Login() {
                   </InputAdornment>
                 ),
               }}
+              sx={{ mb: 3 }}
             />
 
             <Button
@@ -164,22 +148,32 @@ export default function Login() {
               fullWidth
               variant="contained"
               size="large"
-              sx={{ mt: 4, mb: 2, py: 1.5, fontSize: '1.1rem' }}
+              sx={{ 
+                py: 1.5, 
+                fontSize: '1rem', 
+                fontWeight: 700,
+                borderRadius: 3,
+                textTransform: 'none',
+                background: 'linear-gradient(45deg, #2563eb 30%, #7c3aed 90%)',
+                boxShadow: '0 3px 5px 2px rgba(37, 99, 235, .3)',
+                '&:hover': {
+                  background: 'linear-gradient(45deg, #1d4ed8 30%, #6d28d9 90%)',
+                }
+              }}
               disabled={loading}
             >
               {loading ? 'Signing In...' : 'Sign In'}
             </Button>
             
-            <Grid container justifyContent="center">
-              <Grid item>
-                <Link component={RouterLink} to="/register" variant="body2" sx={{ fontWeight: 600 }}>
-                  {"Don't have an account? Sign Up"}
-                </Link>
-              </Grid>
-            </Grid>
-          </Box>
-        </Box>
-      </Grid>
-    </Grid>
+            <Box sx={{ mt: 3, textAlign: 'center' }}>
+              <Link component={RouterLink} to="/register" variant="body2" sx={{ fontWeight: 600, color: 'text.primary' }}>
+                {"Don't have an account? "}
+                <span style={{ color: theme.palette.primary.main }}>Sign Up</span>
+              </Link>
+            </Box>
+          </Paper>
+        </Container>
+      </Fade>
+    </Box>
   );
 }
