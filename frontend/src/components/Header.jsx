@@ -8,7 +8,7 @@ import { useTheme } from '@mui/material/styles';
 import { useContext } from 'react';
 import { Brightness4, Brightness7 } from '@mui/icons-material';
 import { Link as RouterLink } from 'react-router-dom';
-import { ColorModeContext } from '../App';
+import { ColorModeContext } from '../context/ColorModeContext';
 
 export default function Header({ onLogout }) {
   const theme = useTheme();
