@@ -107,7 +107,7 @@ export default function Dashboard() {
       </Fade>
 
       <Grid container spacing={3}>
-        <Grid item xs={12} sm={6} md={4}>
+        <Grid size={{ xs: 12, sm: 6, md: 4 }}>
           <StatCard 
             title="Total Documents" 
             value={count} 
@@ -118,7 +118,7 @@ export default function Dashboard() {
           />
         </Grid>
 
-        <Grid item xs={12} sm={6} md={4}>
+        <Grid size={{ xs: 12, sm: 6, md: 4 }}>
           <StatCard 
             title="Total Expenses" 
             value={`$ ${total.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`} 
@@ -129,7 +129,7 @@ export default function Dashboard() {
           />
         </Grid>
 
-        <Grid item xs={12} md={4}>
+        <Grid size={{ xs: 12, md: 4 }}>
           <Grow in timeout={1000} style={{ transitionDelay: '600ms' }}>
             <Paper sx={{ height: '100%', p: 3 }}>
               <Box sx={{ mb: 3, display: 'flex', alignItems: 'center', gap: 1 }}>

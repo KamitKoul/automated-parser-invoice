@@ -154,7 +154,7 @@ export default function Documents() {
         }}
       >
         <Grid container spacing={2} alignItems="center">
-          <Grid item xs={12} md={3}>
+          <Grid size={{ xs: 12, md: 3 }}>
             <TextField 
               fullWidth 
               size="small"
@@ -172,7 +172,7 @@ export default function Documents() {
             />
           </Grid>
 
-          <Grid item xs={6} md={2}>
+          <Grid size={{ xs: 6, md: 2 }}>
             <FormControl fullWidth size="small">
               <InputLabel>Vendor</InputLabel>
               <Select 
@@ -189,7 +189,7 @@ export default function Documents() {
             </FormControl>
           </Grid>
 
-          <Grid item xs={6} md={2}>
+          <Grid size={{ xs: 6, md: 2 }}>
             <TextField 
               label="From" 
               type="date" 
@@ -202,7 +202,7 @@ export default function Documents() {
             />
           </Grid>
 
-          <Grid item xs={6} md={2}>
+          <Grid size={{ xs: 6, md: 2 }}>
             <TextField 
               label="To" 
               type="date" 
@@ -215,7 +215,7 @@ export default function Documents() {
             />
           </Grid>
 
-          <Grid item xs={12} md={3}>
+          <Grid size={{ xs: 12, md: 3 }}>
             <Stack direction="row" spacing={1}>
               <Button 
                 variant="contained" 

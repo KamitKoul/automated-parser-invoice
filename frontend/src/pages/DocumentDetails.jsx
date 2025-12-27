@@ -159,7 +159,7 @@ export default function DocumentDetails() {
       <Grid container spacing={2} sx={{ flexGrow: 1, overflow: 'hidden' }}>
         
         {/* Left Pane: PDF Viewer */}
-        <Grid item xs={12} md={7} sx={{ height: '100%' }}>
+        <Grid size={{ xs: 12, md: 7 }} sx={{ height: '100%' }}>
           <Paper 
             variant="outlined" 
             sx={{ 
@@ -187,7 +187,7 @@ export default function DocumentDetails() {
         </Grid>
 
         {/* Right Pane: Edit Form */}
-        <Grid item xs={12} md={5} sx={{ height: '100%', overflowY: 'auto' }}>
+        <Grid size={{ xs: 12, md: 5 }} sx={{ height: '100%', overflowY: 'auto' }}>
           <Paper sx={{ p: 3, height: '100%', borderRadius: 2 }}>
             <Typography variant="h6" fontWeight={700} sx={{ mb: 3, display: 'flex', alignItems: 'center', gap: 1 }}>
               <ReceiptLong color="primary" /> Verify & Edit Data
