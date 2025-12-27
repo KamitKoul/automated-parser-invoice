@@ -1,6 +1,7 @@
 const Document = require("../models/document");
 const parseDocument = require("../uploads/utils/parser");
 const fs = require("fs");
+const path = require("path");
 
 exports.uploadDocument = async (req, res) => {
   try {
@@ -94,15 +95,31 @@ exports.getDocumentById = async (req, res) => {
 };
 
 exports.downloadDocument = async (req, res) => {
-  const document = await Document.findById(req.params.id);
-  if (!document) return res.status(404).json({ message: "Document not found" });
-  if (document.userId.toString() !== req.user._id.toString()) {
-    return res.status(401).json({ message: "Unauthorized" });
+  try {
+    const document = await Document.findById(req.params.id);
+    if (!document) return res.status(404).json({ message: "Document not found" });
+    if (document.userId.toString() !== req.user._id.toString()) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+
+    if (!document.filePath) return res.status(404).json({ message: "File not available" });
+
+    const absolutePath = path.resolve(document.filePath);
+
+    res.setHeader('Content-Type', document.fileType || 'application/octet-stream');
+    res.setHeader('Content-Disposition', `inline; filename="${document.fileName}"`);
+
+    res.sendFile(absolutePath, (err) => {
+      if (err) {
+        console.error("sendFile error:", err);
+        if (!res.headersSent) {
+          res.status(500).json({ message: "Could not serve file" });
+        }
+      }
+    });
+  } catch (error) {
+    res.status(500).json({ message: "Server error", error: error.message });
   }
-
-  if (!document.filePath) return res.status(404).json({ message: "File not available" });
-
-  res.download(document.filePath, document.fileName);
 };
 
 exports.deleteDocument = async (req, res) => {
