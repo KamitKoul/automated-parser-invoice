@@ -56,9 +56,10 @@ export default function DocumentDetails() {
           totalAmount: data.totalAmount || ""
         });
 
-        // Fetch PDF Blob for display
+        // Fetch Blob for display
         const blobRes = await API.get(`/documents/${id}/download`, { responseType: 'blob' });
-        const url = window.URL.createObjectURL(new Blob([blobRes.data], { type: 'application/pdf' }));
+        const contentType = blobRes.headers['content-type'] || 'application/pdf';
+        const url = window.URL.createObjectURL(new Blob([blobRes.data], { type: contentType }));
         setPdfUrl(url);
       } catch (err) {
         console.error(err);
