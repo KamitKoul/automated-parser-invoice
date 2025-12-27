@@ -23,8 +23,9 @@ import {
   InputAdornment,
   IconButton,
   Chip,
-  alpha
+  Tooltip
 } from '@mui/material';
+import { alpha } from '@mui/material/styles';
 import { 
   Search, 
   FilterList, 
