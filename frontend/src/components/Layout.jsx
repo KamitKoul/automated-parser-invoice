@@ -46,7 +46,7 @@ export default function Layout({ children }) {
         sx={{ 
           flexGrow: 1, 
           p: 3, 
-          width: { md: `calc(100% - 240px)` }, // Subtract sidebar width on desktop
+          width: { md: `calc(100% - 72px)` }, // Subtract collapsed sidebar width
           display: 'flex',
           flexDirection: 'column',
           background: (theme) => theme.palette.mode === 'light' 
