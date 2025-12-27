@@ -6,6 +6,7 @@ export const getDesignTokens = (mode) => ({
     primary: {
       main: '#2563eb',
       light: '#60a5fa',
+      lighter: '#dbeafe', // Added lighter shade
       dark: '#1e40af',
       contrastText: '#ffffff',
     },
@@ -13,6 +14,12 @@ export const getDesignTokens = (mode) => ({
       main: '#7c3aed',
       light: '#a78bfa',
       dark: '#5b21b6',
+      contrastText: '#ffffff',
+    },
+    error: {
+      main: '#ef4444',
+      light: '#f87171',
+      lighter: '#fee2e2', // Added lighter shade
       contrastText: '#ffffff',
     },
     ...(mode === 'light'

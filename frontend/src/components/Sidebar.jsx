@@ -12,14 +12,21 @@ import {
   Description as DescriptionIcon, 
   CloudUpload as UploadFileIcon,
   ReceiptLong,
-  Logout
+  Logout,
+  Brightness4,
+  Brightness7
 } from '@mui/icons-material';
 import { Link as RouterLink, useLocation } from 'react-router-dom';
+import { useTheme } from '@mui/material/styles';
+import { useContext } from 'react';
+import { ColorModeContext } from '../context/ColorModeContext';
 
 const drawerWidth = 240;
 
 export default function Sidebar({ mobileOpen, onClose, onLogout }) {
   const location = useLocation();
+  const theme = useTheme();
+  const colorMode = useContext(ColorModeContext);
 
   const menuItems = [
     { text: 'Dashboard', icon: <DashboardIcon />, path: '/dashboard' },
@@ -88,6 +95,25 @@ export default function Sidebar({ mobileOpen, onClose, onLogout }) {
 
       <Divider />
       
+      {/* Dark Mode Toggle */}
+      <Box sx={{ p: 2, pb: 0 }}>
+        <ListItemButton 
+          onClick={colorMode.toggleColorMode}
+          sx={{
+            borderRadius: 2,
+            color: 'text.secondary',
+            '&:hover': {
+              bgcolor: 'action.hover',
+            },
+          }}
+        >
+          <ListItemIcon sx={{ minWidth: 40, color: 'text.secondary' }}>
+             {theme.palette.mode === 'dark' ? <Brightness7 /> : <Brightness4 />}
+          </ListItemIcon>
+          <ListItemText primary={theme.palette.mode === 'dark' ? "Light Mode" : "Dark Mode"} />
+        </ListItemButton>
+      </Box>
+
       {/* Logout Button */}
       <Box sx={{ p: 2 }}>
         <ListItemButton 
