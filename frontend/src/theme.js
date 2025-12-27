@@ -1,27 +1,41 @@
 import { createTheme } from "@mui/material/styles";
 
-const theme = createTheme({
+export const getDesignTokens = (mode) => ({
   palette: {
+    mode,
     primary: {
-      main: '#2563eb', // A slightly more vibrant blue
+      main: '#2563eb',
       light: '#60a5fa',
       dark: '#1e40af',
       contrastText: '#ffffff',
     },
     secondary: {
-      main: '#7c3aed', // Violet
+      main: '#7c3aed',
       light: '#a78bfa',
       dark: '#5b21b6',
       contrastText: '#ffffff',
     },
-    background: {
-      default: '#f3f4f6', // Light gray background for the app
-      paper: '#ffffff',
-    },
-    text: {
-      primary: '#1f2937', // Dark gray for better readability
-      secondary: '#6b7280',
-    },
+    ...(mode === 'light'
+      ? {
+          background: {
+            default: '#f3f4f6',
+            paper: '#ffffff',
+          },
+          text: {
+            primary: '#1f2937',
+            secondary: '#6b7280',
+          },
+        }
+      : {
+          background: {
+            default: '#111827',
+            paper: '#1f2937',
+          },
+          text: {
+            primary: '#f9fafb',
+            secondary: '#9ca3af',
+          },
+        }),
   },
   typography: {
     fontFamily: '"Inter", "Roboto", "Helvetica", "Arial", sans-serif',
@@ -31,10 +45,10 @@ const theme = createTheme({
     h4: { fontWeight: 600, fontSize: '1.5rem' },
     h5: { fontWeight: 600, fontSize: '1.25rem' },
     h6: { fontWeight: 600, fontSize: '1rem' },
-    button: { textTransform: 'none', fontWeight: 600 }, // Remove all-caps from buttons
+    button: { textTransform: 'none', fontWeight: 600 },
   },
   shape: {
-    borderRadius: 12, // More rounded corners
+    borderRadius: 12,
   },
   components: {
     MuiButton: {
@@ -65,7 +79,7 @@ const theme = createTheme({
     MuiPaper: {
       styleOverrides: {
         root: {
-          backgroundImage: 'none', // Remove default dark mode overlay if we switch later
+          backgroundImage: 'none',
         },
       },
     },
@@ -73,12 +87,14 @@ const theme = createTheme({
       styleOverrides: {
         head: {
           fontWeight: 600,
-          backgroundColor: '#f9fafb',
-          color: '#374151',
+          backgroundColor: mode === 'light' ? '#f9fafb' : '#374151',
+          color: mode === 'light' ? '#374151' : '#f9fafb',
         },
       },
     },
   },
 });
+
+const theme = createTheme(getDesignTokens('light'));
 
 export default theme;

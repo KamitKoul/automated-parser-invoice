@@ -7,8 +7,8 @@ import {
   Typography, 
   LinearProgress, 
   Paper, 
-  Stack, 
-  IconButton 
+  IconButton,
+  Alpha
 } from '@mui/material';
 import { CloudUpload, Delete, InsertDriveFile } from '@mui/icons-material';
 
@@ -16,11 +16,31 @@ export default function Upload() {
   const [file, setFile] = useState(null);
   const [progress, setProgress] = useState(0);
   const [uploading, setUploading] = useState(false);
+  const [dragActive, setDragActive] = useState(false);
   const inputRef = useRef();
 
   const handleFileChange = (e) => {
     if (e.target.files && e.target.files[0]) {
       setFile(e.target.files[0]);
+    }
+  };
+
+  const handleDrag = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (e.type === "dragenter" || e.type === "dragover") {
+      setDragActive(true);
+    } else if (e.type === "dragleave") {
+      setDragActive(false);
+    }
+  };
+
+  const handleDrop = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragActive(false);
+    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+      setFile(e.dataTransfer.files[0]);
     }
   };
 
@@ -69,19 +89,25 @@ export default function Upload() {
 
       <Paper 
         variant="outlined" 
+        onDragEnter={handleDrag}
+        onDragLeave={handleDrag}
+        onDragOver={handleDrag}
+        onDrop={handleDrop}
         sx={{ 
           p: 4, 
           textAlign: 'center', 
           borderStyle: 'dashed', 
           borderWidth: 2, 
-          borderColor: 'primary.light',
-          bgcolor: 'background.paper'
+          borderColor: dragActive ? 'secondary.main' : 'primary.light',
+          bgcolor: dragActive ? 'rgba(37, 99, 235, 0.04)' : 'background.paper',
+          transition: 'all 0.2s ease-in-out',
+          position: 'relative'
         }}
       >
-        <CloudUpload sx={{ fontSize: 60, color: 'primary.main', mb: 2 }} />
+        <CloudUpload sx={{ fontSize: 60, color: dragActive ? 'secondary.main' : 'primary.main', mb: 2 }} />
         
         <Typography variant="h6" gutterBottom>
-          Select a file to upload
+          {dragActive ? 'Drop your file here' : 'Select a file to upload'}
         </Typography>
         <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
           Supported formats: PDF, PNG, JPG

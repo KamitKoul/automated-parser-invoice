@@ -5,14 +5,10 @@ import {
   Card, 
   CardContent, 
   Typography, 
-  List, 
-  ListItem, 
-  ListItemText, 
-  ListItemAvatar,
+  Box, 
+  Paper,
+  LinearProgress,
   Avatar,
-  Box,
-  Divider,
-  Paper
 } from '@mui/material';
 import { 
   DescriptionOutlined, 
@@ -64,7 +60,12 @@ export default function Dashboard() {
           acc[name] = (acc[name] || 0) + (Number(d?.extractedData?.totalAmount) || 0);
           return acc;
         }, {});
-        setTopVendors(Object.entries(vendors).sort((a, b) => b[1] - a[1]).slice(0, 5));
+        
+        const sortedVendors = Object.entries(vendors)
+          .sort((a, b) => b[1] - a[1])
+          .slice(0, 5);
+        
+        setTopVendors(sortedVendors);
       })
       .catch(() => {
         setCount(0);
@@ -72,6 +73,8 @@ export default function Dashboard() {
         setTopVendors([]);
       });
   }, []);
+
+  const maxVendorAmount = topVendors.length > 0 ? topVendors[0][1] : 0;
 
   return (
     <Box>
@@ -98,7 +101,7 @@ export default function Dashboard() {
         <Grid item xs={12} sm={6} md={4}>
           <StatCard 
             title="Total Expenses" 
-            value={`$ ${total.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 5 })}`} 
+            value={`$ ${total.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`} 
             icon={<AttachMoneyOutlined fontSize="large" />} 
             color="success"
             subtext="Total captured amount"
@@ -106,39 +109,34 @@ export default function Dashboard() {
         </Grid>
 
         <Grid item xs={12} md={4}>
-          <Paper sx={{ height: '100%', p: 0, overflow: 'hidden' }}>
-            <Box sx={{ p: 2, bgcolor: 'background.default', borderBottom: 1, borderColor: 'divider' }}>
-               <Typography variant="h6" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                 <StorefrontTwoTone color="secondary" /> Top Vendors
-               </Typography>
+          <Paper sx={{ height: '100%', p: 3 }}>
+            <Box sx={{ mb: 3, display: 'flex', alignItems: 'center', gap: 1 }}>
+               <StorefrontTwoTone color="secondary" />
+               <Typography variant="h6" fontWeight={600}>Top Vendors by Spending</Typography>
             </Box>
-            <List sx={{ p: 0 }}>
+            
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
               {topVendors.length > 0 ? (
-                topVendors.map(([name, amt], index) => (
+                topVendors.map(([name, amt]) => (
                   <Box key={name}>
-                    <ListItem sx={{ py: 2 }}>
-                      <ListItemAvatar>
-                        <Avatar sx={{ bgcolor: 'secondary.light', color: 'secondary.contrastText', fontWeight: 'bold' }}>
-                          {name.charAt(0).toUpperCase()}
-                        </Avatar>
-                      </ListItemAvatar>
-                      <ListItemText 
-                        primary={<Typography variant="subtitle1" fontWeight={600}>{name}</Typography>}
-                        secondary="Vendor"
-                      />
-                      <Typography variant="body1" fontWeight={600} color="primary.main">
-                        $ {amt.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 5 })}
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+                      <Typography variant="body2" fontWeight={600}>{name}</Typography>
+                      <Typography variant="body2" color="primary.main" fontWeight={700}>
+                        $ {amt.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                       </Typography>
-                    </ListItem>
-                    {index < topVendors.length - 1 && <Divider variant="inset" component="li" />}
+                    </Box>
+                    <LinearProgress 
+                      variant="determinate" 
+                      value={(amt / maxVendorAmount) * 100} 
+                      sx={{ height: 8, borderRadius: 4 }}
+                      color="secondary"
+                    />
                   </Box>
                 ))
               ) : (
-                <ListItem>
-                  <ListItemText primary="No data available" />
-                </ListItem>
+                <Typography variant="body2" color="text.secondary">No data available</Typography>
               )}
-            </List>
+            </Box>
           </Paper>
         </Grid>
       </Grid>
